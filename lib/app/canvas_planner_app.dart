@@ -34,7 +34,7 @@ class CanvasPlannerApp extends StatelessWidget {
         create: (_) => CanvasEntitiesBloc(repository: repository)
           ..add(const CanvasEntitiesLoadRequested()),
         child: MaterialApp(
-          title: 'Lienzo de entidades',
+          title: 'Mantenimiento Panoramic',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             useMaterial3: true,
