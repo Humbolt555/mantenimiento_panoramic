@@ -128,7 +128,7 @@ class CanvasEntitiesBloc
     final newDy =
         (entity.position.dy * event.canvasSize.height + event.delta.dy) /
             event.canvasSize.height;
-    const maxExtent = 2.5;
+    const maxExtent = 4.0;
     final updatedEntity = entity.copyWith(
       position: Offset(
         newDx.clamp(0.0, maxExtent),
