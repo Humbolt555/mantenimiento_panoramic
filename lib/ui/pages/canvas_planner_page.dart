@@ -141,77 +141,84 @@ class _CanvasPlannerPageState extends State<CanvasPlannerPage> {
     final totalCount = state.entities.length;
     final filteredCount = entities.length;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        HeaderSection(
-          onAdd: () => context
-              .read<CanvasEntitiesBloc>()
-              .add(const CanvasEntityAdded()),
-          totalCount: totalCount,
-          filteredCount: filteredCount,
-        ),
-        const SizedBox(height: 18),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 1000;
-              final panel = EntityPanel(
-                controller: _filterController,
-                filterText: state.filterText,
-                totalCount: totalCount,
-                filteredCount: filteredCount,
-                entities: entities,
-                onFilterChanged: (value) => context
-                    .read<CanvasEntitiesBloc>()
-                    .add(CanvasFilterChanged(value)),
-                onClearFilter: () {
-                  _filterController.clear();
-                  context
-                      .read<CanvasEntitiesBloc>()
-                      .add(const CanvasFilterChanged(''));
-                },
-                onSelect: (entity) async {
-                  final updated = await _showEditor(entity);
-                  _handleEditorResult(updated);
-                },
-              );
-              final canvas = CanvasPanel(
-                entities: entities,
-                onEdit: (entity) async {
-                  final updated = await _showEditor(entity);
-                  _handleEditorResult(updated);
-                },
-                onDrag: (id, delta, size) => context
-                    .read<CanvasEntitiesBloc>()
-                    .add(CanvasEntityPositionUpdated(
-                      id: id,
-                      delta: delta,
-                      canvasSize: size,
-                    )),
-                filterActive: state.filterActive,
-              );
+    final header = HeaderSection(
+      onAdd: () =>
+          context.read<CanvasEntitiesBloc>().add(const CanvasEntityAdded()),
+      totalCount: totalCount,
+      filteredCount: filteredCount,
+    );
+    final panel = EntityPanel(
+      controller: _filterController,
+      filterText: state.filterText,
+      totalCount: totalCount,
+      filteredCount: filteredCount,
+      entities: entities,
+      onFilterChanged: (value) =>
+          context.read<CanvasEntitiesBloc>().add(CanvasFilterChanged(value)),
+      onClearFilter: () {
+        _filterController.clear();
+        context.read<CanvasEntitiesBloc>().add(const CanvasFilterChanged(''));
+      },
+      onSelect: (entity) async {
+        final updated = await _showEditor(entity);
+        _handleEditorResult(updated);
+      },
+    );
+    final canvas = CanvasPanel(
+      entities: entities,
+      onEdit: (entity) async {
+        final updated = await _showEditor(entity);
+        _handleEditorResult(updated);
+      },
+      onDrag: (id, delta, size) => context
+          .read<CanvasEntitiesBloc>()
+          .add(CanvasEntityPositionUpdated(
+            id: id,
+            delta: delta,
+            canvasSize: size,
+          )),
+      filterActive: state.filterActive,
+    );
 
-              if (isWide) {
-                return Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 1000;
+
+        if (isWide) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              header,
+              const SizedBox(height: 18),
+              Expanded(
+                child: Row(
                   children: [
                     SizedBox(width: 300, child: panel),
                     const SizedBox(width: 20),
                     Expanded(child: canvas),
                   ],
-                );
-              }
-              return Column(
-                children: [
-                  SizedBox(height: 320, child: panel),
-                  const SizedBox(height: 16),
-                  Expanded(child: canvas),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
+                ),
+              ),
+            ],
+          );
+        }
+
+        final panelHeight =
+            (constraints.maxHeight * 0.55).clamp(280.0, 420.0).toDouble();
+        final canvasHeight =
+            (constraints.maxWidth / 1.6).clamp(260.0, 420.0).toDouble();
+
+        return ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            header,
+            const SizedBox(height: 18),
+            SizedBox(height: panelHeight, child: panel),
+            const SizedBox(height: 16),
+            SizedBox(height: canvasHeight, child: canvas),
+          ],
+        );
+      },
     );
   }
 }
