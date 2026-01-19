@@ -1,16 +1,58 @@
-# mantenimiento_panoramic
+# Mantenimiento Panoramic
 
-A new Flutter project.
+Panel de mantenimiento con mapa de activos, gestion de entidades y flujo de
+autenticacion. Las entidades y opciones se guardan por usuario en Firestore.
 
-## Getting Started
+## Funcionalidades
+- Login, registro y recuperacion de contrasena (Firebase Auth)
+- Canvas interactivo con zoom, pan y arrastre de entidades
+- Editor de entidades con estado y categoria desde listas configurables
+- Vista de configuracion para administrar estados y categorias
+- Persistencia por usuario en Firestore
 
-This project is a starting point for a Flutter application.
+## Stack
+- Flutter + Material 3
+- BLoC para estado
+- Firebase Auth + Cloud Firestore
 
-A few resources to get you started if this is your first Flutter project:
+## Configuracion rapida
+1) Instalar dependencias
+```bash
+flutter pub get
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2) Habilitar en Firebase:
+- Authentication > Email/Password
+- Cloud Firestore
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3) Reglas recomendadas (Firestore)
+```rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/canvas/{docId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+4) Ejecutar
+```bash
+flutter run
+```
+
+## Estructura
+- `lib/app`: app raiz y tema
+- `lib/bloc`: estado y eventos de entidades
+- `lib/data`: repositorios (Firestore)
+- `lib/models`: modelos base
+- `lib/ui/pages`: pantallas (auth, planner, settings)
+- `lib/ui/widgets`: componentes visuales
+
+## Capturas
+
+![Login](docs/screenshots/login.png)
+![Canvas](docs/screenshots/canvas.png)
+![Settings](docs/screenshots/settings.png)
