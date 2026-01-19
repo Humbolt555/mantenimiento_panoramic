@@ -13,18 +13,24 @@ class CanvasEntitiesState extends Equatable {
   const CanvasEntitiesState({
     this.status = CanvasEntitiesStatus.initial,
     this.entities = const [],
+    this.statusOptions = const [],
+    this.categoryOptions = const [],
     this.filterText = '',
     this.pendingEditorEntity,
   });
 
   final CanvasEntitiesStatus status;
   final List<CanvasEntity> entities;
+  final List<String> statusOptions;
+  final List<String> categoryOptions;
   final String filterText;
   final CanvasEntity? pendingEditorEntity;
 
   CanvasEntitiesState copyWith({
     CanvasEntitiesStatus? status,
     List<CanvasEntity>? entities,
+    List<String>? statusOptions,
+    List<String>? categoryOptions,
     String? filterText,
     CanvasEntity? pendingEditorEntity,
     bool clearPendingEditor = false,
@@ -32,6 +38,8 @@ class CanvasEntitiesState extends Equatable {
     return CanvasEntitiesState(
       status: status ?? this.status,
       entities: entities ?? this.entities,
+      statusOptions: statusOptions ?? this.statusOptions,
+      categoryOptions: categoryOptions ?? this.categoryOptions,
       filterText: filterText ?? this.filterText,
       pendingEditorEntity:
           clearPendingEditor ? null : pendingEditorEntity ?? this.pendingEditorEntity,
@@ -55,5 +63,12 @@ class CanvasEntitiesState extends Equatable {
   bool get filterActive => filterText.trim().isNotEmpty;
 
   @override
-  List<Object?> get props => [status, entities, filterText, pendingEditorEntity];
+  List<Object?> get props => [
+        status,
+        entities,
+        statusOptions,
+        categoryOptions,
+        filterText,
+        pendingEditorEntity,
+      ];
 }

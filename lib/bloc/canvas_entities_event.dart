@@ -63,3 +63,16 @@ class CanvasEntityPositionUpdated extends CanvasEntitiesEvent {
 class CanvasEditorDismissed extends CanvasEntitiesEvent {
   const CanvasEditorDismissed();
 }
+
+class CanvasOptionsUpdated extends CanvasEntitiesEvent {
+  const CanvasOptionsUpdated({
+    required this.statusOptions,
+    required this.categoryOptions,
+  });
+
+  final List<String> statusOptions;
+  final List<String> categoryOptions;
+
+  @override
+  List<Object?> get props => [statusOptions, categoryOptions];
+}

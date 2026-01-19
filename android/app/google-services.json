@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "9833790450",
+    "project_id": "mantenimiento-3fc49",
+    "storage_bucket": "mantenimiento-3fc49.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9833790450:android:b186d7312541515cfb096b",
+        "android_client_info": {
+          "package_name": "com.example.mantenimiento_panoramic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "9833790450-0u6j7trh2k3dk79ms1k29sbn1f09kp79.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1tQJazhAPw8Uj29NCqknRX1iIknbfMOg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "9833790450-0u6j7trh2k3dk79ms1k29sbn1f09kp79.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

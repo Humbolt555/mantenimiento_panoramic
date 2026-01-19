@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# React/Vite
+react/node_modules/
+react/dist/
+react/.vite/

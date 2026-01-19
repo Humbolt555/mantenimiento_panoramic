@@ -6,10 +6,14 @@ class EntityEditorSheet extends StatefulWidget {
   const EntityEditorSheet({
     super.key,
     required this.entity,
+    required this.statusOptions,
+    required this.categoryOptions,
     required this.onDelete,
   });
 
   final CanvasEntity entity;
+  final List<String> statusOptions;
+  final List<String> categoryOptions;
   final VoidCallback onDelete;
 
   @override
@@ -19,26 +23,32 @@ class EntityEditorSheet extends StatefulWidget {
 class _EntityEditorSheetState extends State<EntityEditorSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late final TextEditingController _typeController;
-  late final TextEditingController _statusController;
   late final TextEditingController _ownerController;
   late final TextEditingController _notesController;
+  late String? _selectedCategory;
+  late String? _selectedStatus;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.entity.name);
-    _typeController = TextEditingController(text: widget.entity.type);
-    _statusController = TextEditingController(text: widget.entity.status);
     _ownerController = TextEditingController(text: widget.entity.owner);
     _notesController = TextEditingController(text: widget.entity.notes);
+    _selectedCategory = widget.entity.type;
+    _selectedStatus = widget.entity.status;
+    if ((_selectedCategory == null || _selectedCategory!.trim().isEmpty) &&
+        widget.categoryOptions.isNotEmpty) {
+      _selectedCategory = widget.categoryOptions.first;
+    }
+    if ((_selectedStatus == null || _selectedStatus!.trim().isEmpty) &&
+        widget.statusOptions.isNotEmpty) {
+      _selectedStatus = widget.statusOptions.first;
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _typeController.dispose();
-    _statusController.dispose();
     _ownerController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -52,12 +62,25 @@ class _EntityEditorSheetState extends State<EntityEditorSheet> {
       context,
       widget.entity.copyWith(
         name: _nameController.text.trim(),
-        type: _typeController.text.trim(),
-        status: _statusController.text.trim(),
+        type: _selectedCategory?.trim() ?? '',
+        status: _selectedStatus?.trim() ?? '',
         owner: _ownerController.text.trim(),
         notes: _notesController.text.trim(),
       ),
     );
+  }
+
+  List<String> _optionsWithCurrent(List<String> options, String? currentValue) {
+    final normalized = options.map((value) => value.trim()).where((value) {
+      return value.isNotEmpty;
+    }).toList();
+    final current = currentValue?.trim();
+    if (current != null &&
+        current.isNotEmpty &&
+        !normalized.any((item) => item.toLowerCase() == current.toLowerCase())) {
+      normalized.insert(0, current);
+    }
+    return normalized;
   }
 
   @override
@@ -107,16 +130,66 @@ class _EntityEditorSheetState extends State<EntityEditorSheet> {
                         : null,
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _typeController,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: 'Tipo'),
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: _optionsWithCurrent(
+                  widget.categoryOptions,
+                  _selectedCategory,
+                ).contains(_selectedCategory)
+                    ? _selectedCategory
+                    : null,
+                items: _optionsWithCurrent(
+                  widget.categoryOptions,
+                  _selectedCategory,
+                ).map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                decoration: const InputDecoration(labelText: 'Categoria'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Selecciona una categoria.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _statusController,
-                textInputAction: TextInputAction.next,
+              DropdownButtonFormField<String>(
+                isExpanded: true,
+                initialValue: _optionsWithCurrent(
+                  widget.statusOptions,
+                  _selectedStatus,
+                ).contains(_selectedStatus)
+                    ? _selectedStatus
+                    : null,
+                items: _optionsWithCurrent(
+                  widget.statusOptions,
+                  _selectedStatus,
+                ).map((option) {
+                  return DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value;
+                  });
+                },
                 decoration: const InputDecoration(labelText: 'Estado'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Selecciona un estado.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
               TextFormField(

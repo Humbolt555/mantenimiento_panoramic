@@ -1,42 +1,131 @@
-import 'dart:convert';
 import 'dart:ui';
 
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/canvas_entity.dart';
+import '../models/entity_options.dart';
 
 class CanvasEntitiesRepository {
-  CanvasEntitiesRepository({required SharedPreferences preferences})
-      : _preferences = preferences;
+  CanvasEntitiesRepository({
+    required FirebaseAuth auth,
+    required FirebaseFirestore firestore,
+  })  : _auth = auth,
+        _firestore = firestore;
 
-  static const _storageKey = 'canvas_entities_storage';
+  static const _userCollection = 'users';
+  static const _canvasCollection = 'canvas';
+  static const _entitiesDocument = 'canvas_state';
+  static const _optionsDocument = 'options';
 
-  final SharedPreferences _preferences;
-
-  static Future<CanvasEntitiesRepository> create() async {
-    final preferences = await SharedPreferences.getInstance();
-    return CanvasEntitiesRepository(preferences: preferences);
-  }
+  final FirebaseAuth _auth;
+  final FirebaseFirestore _firestore;
 
   Future<List<CanvasEntity>> fetchEntities() async {
-    final raw = _preferences.getString(_storageKey);
-    if (raw == null || raw.isEmpty) {
+    final user = _auth.currentUser;
+    if (user == null) {
       return _seedEntities;
     }
     try {
-      final decoded = jsonDecode(raw) as List<dynamic>;
-      return decoded
-          .map((item) => CanvasEntity.fromJson(item as Map<String, dynamic>))
-          .toList();
+      final snapshot = await _firestore
+          .collection(_userCollection)
+          .doc(user.uid)
+          .collection(_canvasCollection)
+          .doc(_entitiesDocument)
+          .get();
+      final data = snapshot.data();
+      final raw = data?['entities'];
+      if (raw is List) {
+        return raw
+            .map((item) => CanvasEntity.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      await saveEntities(_seedEntities);
+      return _seedEntities;
     } catch (_) {
       return _seedEntities;
     }
   }
 
   Future<void> saveEntities(List<CanvasEntity> entities) async {
-    final encoded = jsonEncode(entities.map((e) => e.toJson()).toList());
-    await _preferences.setString(_storageKey, encoded);
+    final user = _auth.currentUser;
+    if (user == null) {
+      return;
+    }
+    await _firestore
+        .collection(_userCollection)
+        .doc(user.uid)
+        .collection(_canvasCollection)
+        .doc(_entitiesDocument)
+        .set({
+      'entities': entities.map((entity) => entity.toJson()).toList(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
+
+  Future<EntityOptions> fetchOptions() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return _seedOptions;
+    }
+    try {
+      final snapshot = await _firestore
+          .collection(_userCollection)
+          .doc(user.uid)
+          .collection(_canvasCollection)
+          .doc(_optionsDocument)
+          .get();
+      final data = snapshot.data();
+      if (data == null || data.isEmpty) {
+        await saveOptions(_seedOptions);
+        return _seedOptions;
+      }
+      final options = EntityOptions.fromJson(data);
+      if (options.statuses.isEmpty || options.categories.isEmpty) {
+        final merged = EntityOptions(
+          statuses:
+              options.statuses.isEmpty ? _seedOptions.statuses : options.statuses,
+          categories: options.categories.isEmpty
+              ? _seedOptions.categories
+              : options.categories,
+        );
+        await saveOptions(merged);
+        return merged;
+      }
+      return options;
+    } catch (_) {
+      return _seedOptions;
+    }
+  }
+
+  Future<void> saveOptions(EntityOptions options) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return;
+    }
+    await _firestore
+        .collection(_userCollection)
+        .doc(user.uid)
+        .collection(_canvasCollection)
+        .doc(_optionsDocument)
+        .set(options.toJson(), SetOptions(merge: true));
+  }
+
+  EntityOptions get _seedOptions => const EntityOptions(
+        statuses: [
+          'Activa',
+          'Alerta',
+          'Planificada',
+        ],
+        categories: [
+          'Mecanica',
+          'Electrica',
+          'Hidraulica',
+          'Proceso',
+          'Automatizacion',
+          'Inspeccion',
+        ],
+      );
 
   List<CanvasEntity> get _seedEntities => const [
         CanvasEntity(

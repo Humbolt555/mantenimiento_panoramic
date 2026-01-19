@@ -8,11 +8,17 @@ class HeaderSection extends StatelessWidget {
     required this.onAdd,
     required this.totalCount,
     required this.filteredCount,
+    this.onSignOut,
+    this.userEmail,
+    this.onSettings,
   });
 
   final VoidCallback onAdd;
   final int totalCount;
   final int filteredCount;
+  final VoidCallback? onSignOut;
+  final String? userEmail;
+  final VoidCallback? onSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -59,18 +65,59 @@ class HeaderSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        FilledButton.icon(
-          onPressed: onAdd,
-          style: FilledButton.styleFrom(
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (userEmail != null)
+              Text(
+                userEmail!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                textAlign: TextAlign.right,
+              ),
+            if (onSettings != null || onSignOut != null)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onSettings != null)
+                    IconButton(
+                      tooltip: 'Configuracion',
+                      onPressed: onSettings,
+                      icon: const Icon(Icons.settings_outlined),
+                      color: colorScheme.secondary,
+                    ),
+                  if (onSignOut != null)
+                    TextButton.icon(
+                      onPressed: onSignOut,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colorScheme.secondary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                      ),
+                      icon: const Icon(Icons.logout, size: 18),
+                      label: const Text('Salir'),
+                    ),
+                ],
+              ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: onAdd,
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Agregar entidad'),
             ),
-          ),
-          icon: const Icon(Icons.add),
-          label: const Text('Agregar entidad'),
+          ],
         ),
       ],
     );

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../bloc/canvas_entities_bloc.dart';
 import '../../bloc/canvas_entities_event.dart';
 import '../../bloc/canvas_entities_state.dart';
 import '../../models/canvas_entity.dart';
+import '../../models/entity_options.dart';
 import '../widgets/canvas_panel.dart';
 import '../widgets/entity_editor_sheet.dart';
 import '../widgets/entity_panel.dart';
 import '../widgets/glow_blob.dart';
 import '../widgets/header_section.dart';
+import 'settings_page.dart';
 
 class CanvasPlannerPage extends StatefulWidget {
   const CanvasPlannerPage({super.key});
@@ -27,13 +30,19 @@ class _CanvasPlannerPageState extends State<CanvasPlannerPage> {
     super.dispose();
   }
 
-  Future<CanvasEntity?> _showEditor(CanvasEntity entity) {
+  Future<CanvasEntity?> _showEditor(
+    CanvasEntity entity, {
+    required List<String> statusOptions,
+    required List<String> categoryOptions,
+  }) {
     return showModalBottomSheet<CanvasEntity>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => EntityEditorSheet(
         entity: entity,
+        statusOptions: statusOptions,
+        categoryOptions: categoryOptions,
         onDelete: () => context
             .read<CanvasEntitiesBloc>()
             .add(CanvasEntityDeleted(entity.id)),
@@ -61,7 +70,11 @@ class _CanvasPlannerPageState extends State<CanvasPlannerPage> {
         if (entity == null) {
           return;
         }
-        final updated = await _showEditor(entity);
+        final updated = await _showEditor(
+          entity,
+          statusOptions: state.statusOptions,
+          categoryOptions: state.categoryOptions,
+        );
         if (!context.mounted) {
           return;
         }
@@ -141,11 +154,35 @@ class _CanvasPlannerPageState extends State<CanvasPlannerPage> {
     final totalCount = state.entities.length;
     final filteredCount = entities.length;
 
+    final userEmail = FirebaseAuth.instance.currentUser?.email;
     final header = HeaderSection(
       onAdd: () =>
           context.read<CanvasEntitiesBloc>().add(const CanvasEntityAdded()),
       totalCount: totalCount,
       filteredCount: filteredCount,
+      userEmail: userEmail,
+      onSignOut: () {
+        FirebaseAuth.instance.signOut();
+      },
+      onSettings: () async {
+        final updated = await Navigator.of(context).push<EntityOptions>(
+          MaterialPageRoute(
+            builder: (_) => EntitySettingsPage(
+              statusOptions: state.statusOptions,
+              categoryOptions: state.categoryOptions,
+            ),
+          ),
+        );
+        if (!context.mounted || updated == null) {
+          return;
+        }
+        context.read<CanvasEntitiesBloc>().add(
+              CanvasOptionsUpdated(
+                statusOptions: updated.statuses,
+                categoryOptions: updated.categories,
+              ),
+            );
+      },
     );
     final panel = EntityPanel(
       controller: _filterController,
@@ -160,14 +197,22 @@ class _CanvasPlannerPageState extends State<CanvasPlannerPage> {
         context.read<CanvasEntitiesBloc>().add(const CanvasFilterChanged(''));
       },
       onSelect: (entity) async {
-        final updated = await _showEditor(entity);
+        final updated = await _showEditor(
+          entity,
+          statusOptions: state.statusOptions,
+          categoryOptions: state.categoryOptions,
+        );
         _handleEditorResult(updated);
       },
     );
     final canvas = CanvasPanel(
       entities: entities,
       onEdit: (entity) async {
-        final updated = await _showEditor(entity);
+        final updated = await _showEditor(
+          entity,
+          statusOptions: state.statusOptions,
+          categoryOptions: state.categoryOptions,
+        );
         _handleEditorResult(updated);
       },
       onDrag: (id, delta, size) => context
