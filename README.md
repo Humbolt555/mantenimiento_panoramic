@@ -1,4 +1,4 @@
-# Mantenimiento Panoramic
+# Mantenimiento App
 
 Panel de mantenimiento con mapa de activos, gestion de entidades y flujo de
 autenticacion. Las entidades y opciones se guardan por usuario en Firestore.

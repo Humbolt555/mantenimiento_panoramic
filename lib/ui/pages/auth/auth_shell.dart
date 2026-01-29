@@ -63,7 +63,7 @@ class AuthShell extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mantenimiento Panoramic',
+                        'Mantenimiento App',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: colorScheme.primary,
                               fontWeight: FontWeight.w700,

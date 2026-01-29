@@ -29,7 +29,7 @@ class CanvasPlannerApp extends StatelessWidget {
     return RepositoryProvider.value(
       value: repository,
       child: MaterialApp(
-        title: 'Mantenimiento Panoramic',
+        title: 'Mantenimiento App',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,

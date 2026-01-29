@@ -31,7 +31,7 @@ class HeaderSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Mantenimiento Panoramic',
+                'Mantenimiento App',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: colorScheme.primary,
